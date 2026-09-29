@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Česky krok za krokem - тренажер</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2F8; --ink:#1A2340; --card:#FFFFFF; --muted:#5A6788; --accent:#FFC93C; --good:#1F9D55; --bad:#E5533D;
+  --ma:#1E88E5; --mi:#303F9F; --f:#C2185B; --n:#2E7D32;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#0F1626; --ink:#E6ECF7; --card:#1B253B; --muted:#9AA8C7; --accent:#F2B705; --good:#3CC47C; --bad:#FF6F5B; --ma:#64B5F6; --mi:#A5B0FF; --f:#F48FB1; --n:#81C784; }
+}
+:root[data-theme="dark"]{ --bg:#0F1626; --ink:#E6ECF7; --card:#1B253B; --muted:#9AA8C7; --accent:#F2B705; --good:#3CC47C; --bad:#FF6F5B; --ma:#64B5F6; --mi:#A5B0FF; --f:#F48FB1; --n:#81C784; }
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Onest","Segoe UI",system-ui,-apple-system,sans-serif;min-height:100%;line-height:1.45}
+main{max-width:560px;margin:0 auto;padding:14px 16px 40px}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.book{margin:0;color:var(--muted);font-weight:600;font-size:.9rem}
+h1{font-size:2.1rem;font-weight:800;line-height:1.05;margin:2px 0 0;letter-spacing:-.01em}
+.sub{margin:2px 0 12px;color:var(--muted);font-weight:600}
+.lessons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.les{border:3px solid var(--ink);background:var(--card);border-radius:14px;padding:6px 4px;font-weight:800;cursor:pointer;font-size:1rem}
+.les[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.tab{border:3px solid var(--ink);background:var(--card);border-radius:14px;padding:8px 2px;font-weight:800;font-size:.9rem;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--accent);color:#1A2340}
+.tab:disabled,.les:disabled,.chip:disabled{opacity:.35;cursor:not-allowed}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:6px;scrollbar-width:thin}
+.chip{flex:none;border:2px solid var(--ink);background:var(--card);border-radius:999px;padding:4px 12px;font-weight:600;font-size:.9rem;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.82rem;font-weight:600;color:var(--muted);margin:0 0 12px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;background:currentColor;vertical-align:-1px}
+.g-Ma{color:var(--ma)} .g-Mi{color:var(--mi)} .g-F{color:var(--f)} .g-N{color:var(--n)}
+.badge{display:inline-block;border:2px solid currentColor;border-radius:8px;padding:0 7px;font-size:.8rem;font-weight:800;margin-top:8px}
+
+.progress{display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px;font-size:.95rem}
+.bar{height:10px;border:2px solid var(--ink);border-radius:999px;overflow:hidden;margin-bottom:14px}
+.bar span{display:block;height:100%;background:var(--good);width:0;transition:width .3s}
+.help{color:var(--muted);margin:0 0 12px;font-size:.93rem}
+
+.scene{perspective:1200px;height:300px;cursor:pointer}
+.card{position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.card.flipped{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--ink);border-radius:22px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;box-shadow:6px 6px 0 var(--ink)}
+.back{transform:rotateY(180deg)}
+.emoji{font-size:3.6rem;line-height:1;margin-bottom:10px}
+.word{font-size:2rem;font-weight:800;line-height:1.15;word-break:break-word}
+.tap{position:absolute;bottom:10px;font-size:.82rem;color:var(--muted);font-weight:600}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.btn{border:3px solid var(--ink);border-radius:14px;padding:11px 10px;font-weight:800;font-size:1.05rem;cursor:pointer;background:var(--card);box-shadow:4px 4px 0 var(--ink)}
+.btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn.primary{background:var(--ink);color:var(--bg)}
+.btn.good{background:var(--good);color:#fff}
+.btn.again{background:var(--bad);color:#fff}
+.btn.wide{width:100%;margin-top:14px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.links{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.link{background:none;border:none;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px}
+
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:flex;flex-direction:column;gap:10px}
+.tile{min-height:58px;border:3px solid var(--ink);border-radius:14px;background:var(--card);cursor:pointer;box-shadow:3px 3px 0 var(--ink);padding:6px 8px;font-weight:700;font-size:1rem;line-height:1.2}
+.tile.sel{background:var(--accent);color:#1A2340}
+.tile.ok{background:var(--good);color:#fff;border-color:var(--good);box-shadow:none;cursor:default}
+.tile.shake{animation:shake .35s}
+
+.q{border:3px solid var(--ink);border-radius:22px;background:var(--card);box-shadow:6px 6px 0 var(--ink);padding:22px 16px;text-align:center}
+.q .prompt{font-size:1.55rem;font-weight:800;line-height:1.25;margin:4px 0 6px;word-break:break-word}
+.q .hint{color:var(--muted);font-weight:600;margin:0 0 14px}
+.bignum{font-size:3rem;font-weight:800}
+.pattern{font-family:"Courier New",monospace;font-size:1.3rem;font-weight:700;letter-spacing:.14em;margin:0 0 12px;word-break:break-word}
+.ans{width:100%;font:inherit;font-size:1.3rem;font-weight:700;text-align:center;padding:10px;border:3px solid var(--ink);border-radius:14px;background:var(--bg);color:var(--ink)}
+.ans.good{border-color:var(--good)} .ans.bad{border-color:var(--bad)}
+.dia{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px 0 0}
+.dia button{min-width:38px;padding:6px 0;border:2px solid var(--ink);border-radius:10px;background:var(--bg);font-weight:800;font-size:1.05rem;cursor:pointer}
+.fb{margin-top:12px;font-weight:800;min-height:1.5em}
+.fb.good{color:var(--good)} .fb.bad{color:var(--bad)} .fb.almost{color:#B7791F}
+.opts{display:grid;gap:10px;margin-top:6px}
+.opt{border:3px solid var(--ink);border-radius:14px;background:var(--bg);padding:10px 12px;font-weight:700;font-size:1.05rem;cursor:pointer;text-align:left}
+.opt.right{background:var(--good);color:#fff;border-color:var(--good)}
+.opt.wrong{background:var(--bad);color:#fff;border-color:var(--bad)}
+.gbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gbtn{border:3px solid currentColor;border-radius:14px;background:var(--bg);padding:12px 6px;font-weight:800;cursor:pointer}
+.gbtn.right{background:var(--good);color:#fff;border-color:var(--good)}
+.gbtn.wrong{background:var(--bad);color:#fff;border-color:var(--bad)}
+
+.chat{display:flex;flex-direction:column;gap:8px;text-align:left;margin-bottom:14px}
+.bub{max-width:88%;padding:9px 13px;border-radius:16px;border:2px solid var(--ink);font-weight:600}
+.bub.a{align-self:flex-start;background:var(--bg);border-bottom-left-radius:4px}
+.bub.b{align-self:flex-end;background:var(--accent);color:#1A2340;border-bottom-right-radius:4px}
+.who{font-size:.75rem;font-weight:800;opacity:.7;display:block}
+.gap{display:inline-block;min-width:60px;border-bottom:3px solid currentColor;text-align:center}
+.built{min-height:58px;border:3px dashed var(--muted);border-radius:14px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.wt{border:2px solid var(--ink);border-radius:10px;background:var(--card);padding:7px 11px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.built .wt{background:var(--accent);color:#1A2340}
+.wt[disabled]{opacity:.25;cursor:default;box-shadow:none}
+
+.topics{display:grid;gap:10px}
+.topic{border:3px solid var(--ink);border-radius:16px;background:var(--card);padding:12px 14px;text-align:left;cursor:pointer;box-shadow:4px 4px 0 var(--ink)}
+.topic b{display:block;font-size:1.05rem}
+.topic small{color:var(--muted);font-weight:600}
+details.rule{border:3px solid var(--ink);border-radius:16px;background:var(--card);padding:10px 14px;margin-bottom:14px}
+details.rule summary{font-weight:800;cursor:pointer}
+.rule p{margin:8px 0}
+.rule table{border-collapse:collapse;margin:8px 0;font-size:.95rem}
+.rule td,.rule th{border-bottom:1px solid var(--muted);padding:3px 10px 3px 0;text-align:left}
+.rule th{color:var(--muted);font-weight:600}
+.scroll{overflow-x:auto}
+
+.stat{border:3px solid var(--ink);border-radius:18px;background:var(--card);padding:12px 14px;margin-bottom:12px;box-shadow:4px 4px 0 var(--ink)}
+.stat h2{font-size:1.15rem;margin:0 0 6px}
+.row{display:flex;justify-content:space-between;gap:10px;font-weight:600;margin:6px 0 2px}
+.mini{height:8px;border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.mini span{display:block;height:100%;background:var(--good)}
+.muted{color:var(--muted);font-weight:500}
+.res{list-style:none;padding:0;margin:14px 0 0;text-align:left}
+.res li{border-bottom:2px dashed var(--muted);padding:8px 2px}
+.res .you{color:var(--bad);text-decoration:line-through}
+.res .right{color:var(--good);font-weight:800}
+.big{font-size:2.8rem;font-weight:800;line-height:1}
+.center{text-align:center}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@media (prefers-reduced-motion: reduce){.card,.bar span{transition:none}.tile.shake{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="book">Česky krok za krokem 1</p>
+    <h1 id="title"></h1>
+    <p class="sub" id="subtitle"></p>
+    <div class="lessons" id="lessons"></div>
+  </header>
+  <nav class="tabs" id="tabs"></nav>
+  <div class="chips" id="chips"></div>
+  <div id="legend"></div>
+  <section id="view"></section>
+</main>
+<script>
+/* ---------- DATA ---------- */
+const LESSONS = {
+  1:{cz:'Seznamujeme se', ua:'Урок 1. Знайомимося'},
+  2:{cz:'Kde je to?', ua:'Урок 2. Де це?'},
+  3:{cz:'Jídlo a pití', ua:'Урок 3. Їжа і напої'}
+};
+const TOPICS = {
+  phr:'Фрази', prof:'Професії', num:'Числа і контакти',
+  loc:'Місця в місті', dir:'Напрямок', trans:'Транспорт', num2:'Числа 10-1000', phr2:'Фрази',
+  food:'Їжа і напої', adj:'Смаки і прикметники', phr3:'У ресторані, у гостях', mit:'Вирази з mít', spok:'Розмовна чеська'
+};
+const GL = {Ma:'чол. жив.', Mi:'чол. нежив.', F:'жін.', N:'сер.', pl:'мн.'};
+/* [lesson, topic, czech, ukrainian, gender, emoji]; alternatives in czech separated by " / " */
+const WORDS = [
+[1,'phr','Dobrý den.','Добрий день.','',''],
+[1,'phr','Ahoj.','Привіт.','','👋'],
+[1,'phr','Čau.','Привіт / бувай (розм.)','','👋'],
+[1,'phr','Na shledanou.','До побачення.','',''],
+[1,'phr','Já jsem...','Я - ... (представитися)','',''],
+[1,'phr','Těší mě.','Приємно познайомитися.','','🤝'],
+[1,'phr','Jak se řekne...?','Як сказати...?','',''],
+[1,'phr','Co znamená...?','Що означає...?','',''],
+[1,'phr','Jak se to píše?','Як це пишеться?','','✍️'],
+[1,'phr','Rozumíte?','Ви розумієте?','',''],
+[1,'phr','Nerozumím.','Я не розумію.','','🤷'],
+[1,'phr','Ještě jednou, prosím.','Ще раз, будь ласка.','','🔁'],
+[1,'phr','Mám otázku.','У мене питання.','','🙋'],
+[1,'phr','Mluvíte anglicky?','Ви говорите англійською?','',''],
+[1,'phr','Děkuju.','Дякую.','',''],
+[1,'phr','Prosím.','Будь ласка.','',''],
+[1,'phr','Odkud jste?','Звідки ви?','',''],
+[1,'phr','Jsem z Ukrajiny.','Я з України.','','🇺🇦'],
+[1,'phr','Co děláte?','Чим ви займаєтеся?','',''],
+[1,'phr','Promiňte.','Вибачте.','',''],
+[1,'phr','To nic.','Нічого страшного.','',''],
+[1,'phr','Jak se máte?','Як ваші справи?','',''],
+[1,'phr','Jak se máš?','Як справи? (на «ти»)','',''],
+[1,'phr','Dobře.','Добре.','','🙂'],
+[1,'phr','Ujde to.','Так собі, непогано.','','😐'],
+[1,'phr','Špatně.','Погано.','','🙁'],
+[1,'phr','Mějte se hezky.','Гарного вам дня.','',''],
+[1,'phr','Můžeme si tykat?','Можемо перейти на «ти»?','',''],
+[1,'phr','To je zajímavé.','Це цікаво.','',''],
+[1,'phr','ano','так','','✅'],
+[1,'phr','ne','ні','','❌'],
+[1,'prof','úředník','службовець','Ma','🗂️'],[1,'prof','úřednice','службовиця','F','🗂️'],
+[1,'prof','dělník','робітник','Ma','👷'],[1,'prof','dělnice','робітниця','F','👷‍♀️'],
+[1,'prof','číšník','офіціант','Ma','🍽️'],[1,'prof','servírka','офіціантка','F','🍽️'],
+[1,'prof','učitel','вчитель','Ma','👨‍🏫'],[1,'prof','učitelka','вчителька','F','👩‍🏫'],
+[1,'prof','doktor / lékař','лікар','Ma','👨‍⚕️'],[1,'prof','doktorka / lékařka','лікарка','F','👩‍⚕️'],
+[1,'prof','prodavač','продавець','Ma','🛒'],[1,'prof','prodavačka','продавчиня','F','🛒'],
+[1,'prof','manažer','менеджер','Ma','💼'],[1,'prof','manažerka','менеджерка','F','💼'],
+[1,'prof','vědec','науковець','Ma','👨‍🔬'],[1,'prof','vědkyně','науковиця','F','👩‍🔬'],
+[1,'prof','policista','поліцейський','Ma','👮'],[1,'prof','policistka','поліцейська','F','👮‍♀️'],
+[1,'prof','uklízeč','прибиральник','Ma','🧹'],[1,'prof','uklízečka','прибиральниця','F','🧹'],
+[1,'prof','hasič','пожежник','Ma','🧑‍🚒'],[1,'prof','hasička','пожежниця','F','🧑‍🚒'],
+[1,'prof','sportovec','спортсмен','Ma','🏃'],[1,'prof','sportovkyně','спортсменка','F','🏃‍♀️'],
+[1,'prof','herec','актор','Ma','🎭'],[1,'prof','herečka','акторка','F','🎭'],
+[1,'prof','zpěvák','співак','Ma','🎤'],[1,'prof','zpěvačka','співачка','F','🎤'],
+[1,'prof','politik','політик','Ma','🏛️'],[1,'prof','politička','політикиня','F','🏛️'],
+[1,'prof','student','студент','Ma','🎓'],[1,'prof','studentka','студентка','F','🎓'],
+[1,'num','nula','0','',''],[1,'num','jedna','1','',''],[1,'num','dva','2','',''],[1,'num','tři','3','',''],
+[1,'num','čtyři','4','',''],[1,'num','pět','5','',''],[1,'num','šest','6','',''],[1,'num','sedm','7','',''],
+[1,'num','osm','8','',''],[1,'num','devět','9','',''],[1,'num','deset','10','',''],
+[1,'num','zavináč','@ (равлик)','Mi','@'],[1,'num','tečka','крапка','F',''],[1,'num','pomlčka','дефіс','F',''],
+[1,'num','podtržítko','нижнє підкреслення','N',''],[1,'num','telefon','телефон','Mi','📱'],[1,'num','adresa','адреса','F','📮'],
+[1,'num','ulice','вулиця','F','🛣️'],[1,'num','číslo','номер, число','N','#️⃣'],
+[2,'loc','divadlo','театр','N','🎭'],[2,'loc','doma','вдома','','🛋️'],[2,'loc','hotel','готель','Mi','🏨'],
+[2,'loc','kancelář','офіс','F','🖥️'],[2,'loc','kino','кінотеатр','N','🎬'],[2,'loc','klub','клуб','Mi','🪩'],
+[2,'loc','nádraží','вокзал','N','🚉'],[2,'loc','náměstí','площа','N','⛲'],[2,'loc','nemocnice','лікарня','F','🏥'],
+[2,'loc','práce','робота','F','🛠️'],[2,'loc','obchod','магазин','Mi','🛍️'],[2,'loc','restaurace','ресторан','F','🍴'],
+[2,'loc','supermarket','супермаркет','Mi','🛒'],[2,'loc','škola','школа','F','🏫'],[2,'loc','univerzita','університет','F','🎓'],
+[2,'loc','letiště','аеропорт','N','✈️'],[2,'loc','zastávka','зупинка','F','🚏'],[2,'loc','banka','банк','F','🏦'],
+[2,'loc','park','парк','Mi','🌳'],[2,'loc','kavárna','кав\u2019ярня','F','☕'],[2,'loc','dům','будинок','Mi','🏠'],
+[2,'loc','město','місто','N','🏙️'],[2,'loc','centrum','центр','N','📍'],
+[2,'dir','vlevo','ліворуч (де?)','','⬅️'],[2,'dir','vpravo','праворуч (де?)','','➡️'],
+[2,'dir','nahoře','нагорі (де?)','','⬆️'],[2,'dir','dole','внизу (де?)','','⬇️'],[2,'dir','uprostřed','посередині (де?)','','⏺️'],
+[2,'dir','doleva','наліво (куди?)','','↩️'],[2,'dir','doprava','направо (куди?)','','↪️'],
+[2,'dir','nahoru','нагору (куди?)','','⤴️'],[2,'dir','dolů','вниз (куди?)','','⤵️'],
+[2,'dir','rovně','прямо','','⬆️'],[2,'dir','zpátky','назад','','🔙'],[2,'dir','blízko','близько','',''],
+[2,'dir','daleko','далеко','',''],[2,'dir','tady','тут','','📍'],[2,'dir','tam','там','','👉'],[2,'dir','pak','потім','',''],
+[2,'trans','metro','метро','N','🚇'],[2,'trans','autobus','автобус','Mi','🚌'],[2,'trans','auto','авто','N','🚗'],
+[2,'trans','kolo','велосипед','N','🚲'],[2,'trans','vlak','потяг','Mi','🚆'],[2,'trans','tramvaj','трамвай','F','🚋'],
+[2,'trans','taxík','таксі','Mi','🚕'],[2,'trans','pěšky','пішки','','🚶'],
+[2,'num2','jedenáct','11','',''],[2,'num2','dvanáct','12','',''],[2,'num2','třináct','13','',''],[2,'num2','čtrnáct','14','',''],
+[2,'num2','patnáct','15','',''],[2,'num2','šestnáct','16','',''],[2,'num2','sedmnáct','17','',''],[2,'num2','osmnáct','18','',''],
+[2,'num2','devatenáct','19','',''],[2,'num2','dvacet','20','',''],[2,'num2','třicet','30','',''],[2,'num2','čtyřicet','40','',''],
+[2,'num2','padesát','50','',''],[2,'num2','šedesát','60','',''],[2,'num2','sedmdesát','70','',''],[2,'num2','osmdesát','80','',''],
+[2,'num2','devadesát','90','',''],[2,'num2','sto','100','',''],[2,'num2','dvě stě','200','',''],[2,'num2','tři sta','300','',''],
+[2,'num2','pět set','500','',''],[2,'num2','tisíc','1000','',''],
+[2,'phr2','Kde je to?','Де це?','',''],
+[2,'phr2','Prosím vás, kde je...?','Перепрошую, де...?','',''],
+[2,'phr2','Nevíte, kde je...?','Ви не знаєте, де...?','',''],
+[2,'phr2','Nevím.','Не знаю.','','🤷'],
+[2,'phr2','Hledám...','Я шукаю...','','🔎'],
+[2,'phr2','Musíte jít rovně.','Треба йти прямо.','',''],
+[2,'phr2','Musíte jet tramvají.','Треба їхати трамваєм.','','🚋'],
+[2,'phr2','Je to daleko?','Це далеко?','',''],
+[2,'phr2','Je to blízko.','Це близько.','',''],
+[2,'phr2','Je to pět minut pěšky.','Це п\u2019ять хвилин пішки.','','🚶'],
+[2,'phr2','Bydlím v Brně.','Я живу в Брно.','','🏠'],
+[2,'phr2','Líbí se mi tady.','Мені тут подобається.','','😊'],
+[2,'phr2','Nelíbí se mi tady.','Мені тут не подобається.','',''],
+[2,'phr2','Jsem ráda, že jsem tady.','Я рада, що я тут.','',''],
+[2,'phr2','To je fajn.','Це класно.','','👍'],
+[3,'food','brambory','картопля','pl','🥔'],[3,'food','čaj','чай','Mi','🍵'],[3,'food','hranolky','картопля фрі','pl','🍟'],
+[3,'food','káva','кава','F','☕'],[3,'food','knedlíky','кнедлики','pl','🥟'],[3,'food','kuře','курка','N','🍗'],
+[3,'food','maso','м\u2019ясо','N','🥩'],[3,'food','palačinky','млинці','pl','🥞'],[3,'food','pivo','пиво','N','🍺'],
+[3,'food','polévka','суп','F','🍲'],[3,'food','rýže','рис','F','🍚'],[3,'food','losos','лосось','Ma','🐟'],
+[3,'food','víno','вино','N','🍷'],[3,'food','voda','вода','F','💧'],[3,'food','zmrzlina','морозиво','F','🍨'],
+[3,'food','sýr','сир','Mi','🧀'],[3,'food','kapr','короп','Ma','🐠'],[3,'food','salát','салат','Mi','🥗'],
+[3,'food','guláš','гуляш','Mi','🍛'],[3,'food','džus','сік','Mi','🧃'],[3,'food','zelí','капуста','N','🥬'],
+[3,'food','šlehačka','збиті вершки','F','🍦'],[3,'food','ovoce','фрукти','N','🍎'],[3,'food','cukr','цукор','Mi','🍬'],
+[3,'food','mléko','молоко','N','🥛'],[3,'food','dort','торт','Mi','🎂'],[3,'food','jídelní lístek','меню','Mi','📋'],
+[3,'food','oběd','обід','Mi','🍽️'],[3,'food','jídlo','їжа','N','🍽️'],[3,'food','pití','напої, пиття','N','🥤'],
+[3,'adj','dobrý','добрий, смачний','','😋'],[3,'adj','výborný','чудовий','','🤩'],[3,'adj','zdravý','здоровий','','🥦'],
+[3,'adj','smažený','смажений','','🍳'],[3,'adj','grilovaný','на грилі','','🔥'],[3,'adj','pečený','запечений','',''],
+[3,'adj','dušený','тушкований','',''],[3,'adj','perlivý','газований','','🫧'],[3,'adj','neperlivý','негазований','',''],
+[3,'adj','česnekový','часниковий','','🧄'],[3,'adj','zeleninový','овочевий','','🥕'],[3,'adj','pomerančový','апельсиновий','','🍊'],
+[3,'adj','vanilkový','ванільний','',''],[3,'adj','hovězí','яловичий','','🐄'],[3,'adj','vepřový','свинячий','','🐖'],
+[3,'adj','černý','чорний','','⚫'],[3,'adj','bílý','білий','','⚪'],[3,'adj','červený','червоний','','🔴'],
+[3,'adj','zelený','зелений','','🟢'],[3,'adj','světlý','світлий','',''],
+[3,'phr3','Co si dáte k pití?','Що будете пити?','','🥤'],
+[3,'phr3','Co si dáte k jídlu?','Що будете їсти?','','🍽️'],
+[3,'phr3','Dám si...','Я візьму...','',''],
+[3,'phr3','Dobrou chuť!','Смачного!','','😋'],
+[3,'phr3','Dáte si ještě něco?','Бажаєте ще щось?','',''],
+[3,'phr3','Zaplatím.','Я розрахуюся.','','💳'],
+[3,'phr3','Zvlášť, nebo dohromady?','Окремо чи разом?','',''],
+[3,'phr3','Kolik stojí...?','Скільки коштує...?','','💰'],
+[3,'phr3','Tady to je.','Ось, прошу.','',''],
+[3,'phr3','Pojďte dál.','Проходьте.','','🚪'],
+[3,'phr3','Sedněte si.','Сідайте.','','🪑'],
+[3,'phr3','Kde je tady toaleta?','Де тут туалет?','','🚻'],
+[3,'phr3','To je mi líto.','Мені шкода.','',''],
+[3,'phr3','To je škoda.','Шкода.','',''],
+[3,'phr3','Jste moc hodná.','Ви дуже люб\u2019язна.','',''],
+[3,'phr3','bohužel','на жаль','',''],
+[3,'phr3','Nechcete kávu?','Не хочете кави?','','☕'],
+[3,'phr3','Mám ráda...','Я люблю... (жін.)','','❤️'],
+[3,'phr3','Mám rád...','Я люблю... (чол.)','','❤️'],
+[3,'phr3','Nejím maso.','Я не їм м\u2019яса.','','🥦'],
+[3,'phr3','Nepiju alkohol.','Я не п\u2019ю алкоголь.','',''],
+[3,'phr3','Chutná mi to.','Мені смакує.','','😋'],
+[3,'mit','mít hlad','бути голодним','','🍽️'],[3,'mit','mít žízeň','хотіти пити','','💧'],
+[3,'mit','mít čas','мати час','','⏰'],[3,'mit','mít pravdu','мати рацію','','☝️'],
+[3,'mit','mít smůlu','не пощастило','','🌧️'],[3,'mit','mít štěstí','пощастило','','🍀'],
+[3,'mit','mít strach','боятися','','😨'],[3,'mit','mít rýmu','мати нежить','','🤧'],
+[3,'mit','mít rande','мати побачення','','💘'],[3,'mit','mít dobrou náladu','бути в гарному настрої','','😄'],
+[3,'mit','mít špatnou náladu','бути в поганому настрої','','😒'],[3,'mit','mít moc práce','мати багато роботи','','📚'],
+[3,'mit','mít dovolenou','бути у відпустці','','🏖️'],[3,'mit','mít nápad','мати ідею','','💡'],
+[3,'mit','mít vztek','злитися','','😠'],[3,'mit','mít peníze','мати гроші','','💶'],
+[3,'spok','jo','так (розм. = ano)','',''],[3,'spok','seš','ти є (розм. = jsi)','',''],
+[3,'spok','kafe','кава (розм. = káva)','N','☕'],[3,'spok','fajn','класно, добре (розм.)','','👍'],
+[3,'spok','jsem v pohodě','я в порядку (розм.)','','😌'],[3,'spok','fakt','справді (розм. = opravdu)','',''],
+[3,'spok','díky','дякую (розм.)','','🙏']
+];
+const W = WORDS.map(([l,t,cz,ua,g,e]) => ({id:l+':'+cz, l, t, cz, ua, g, e, ans: cz.split(' / ')}));
+
+/* verbs: forms for já, ty, on/ona, my, vy, oni; arrays = accepted variants */
+const V = {
+  'být':['jsem','jsi','je','jsme','jste','jsou'],
+  'dělat':['dělám','děláš','dělá','děláme','děláte','dělají'],
+  'mít':['mám','máš','má','máme','máte','mají'],
+  'rozumět':['rozumím','rozumíš','rozumí','rozumíme','rozumíte',['rozumí','rozumějí']],
+  'mluvit':['mluvím','mluvíš','mluví','mluvíme','mluvíte','mluví'],
+  'pracovat':[['pracuju','pracuji'],'pracuješ','pracuje','pracujeme','pracujete',['pracujou','pracují']],
+  'studovat':[['studuju','studuji'],'studuješ','studuje','studujeme','studujete',['studujou','studují']],
+  'jít':['jdu','jdeš','jde','jdeme','jdete','jdou'],
+  'jet':['jedu','jedeš','jede','jedeme','jedete','jedou'],
+  'číst':['čtu','čteš','čte','čteme','čtete','čtou'],
+  'pít':[['piju','piji'],'piješ','pije','pijeme','pijete',['pijou','pijí']],
+  'chtít':['chci','chceš','chce','chceme','chcete','chtějí'],
+  'jíst':['jím','jíš','jí','jíme','jíte',['jedí','jí']]
+};
+const PRON = [['já',0],['ty',1],['on',2],['ona',2],['my',3],['vy',4],['oni',5]];
+const PR6 = ['já','ty','on, ona, to','my','vy','oni'];
+
+/* ---------- HELPERS ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const rand = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+const arr = x => Array.isArray(x) ? x : [x];
+const norm = s => String(s).toLowerCase().replace(/[.,!?;:…"„“«»]/g,'').replace(/\s+/g,' ').trim();
+const strip = s => norm(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+function judge(input, answers){
+  const n = norm(input); if(!n) return 'empty';
+  if(answers.some(a => norm(a) === n)) return 'ok';
+  if(answers.some(a => strip(a) === strip(input))) return 'almost';
+  return 'bad';
+}
+const gw = w => w.g && w.g !== 'pl' ? 'g-'+w.g : '';
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+function today(){ const d=new Date(); return d.toLocaleDateString('uk-UA') + ' ' + d.toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}); }
+const DIA = ['á','č','ď','é','ě','í','ň','ó','ř','š','ť','ú','ů','ý','ž'];
+const diaBar = () => '<div class="dia" aria-label="Чеські літери">' + DIA.map(c => `<button type="button" data-act="dia" data-ch="${c}">${c}</button>`).join('') + '</div>';
+
+/* ---------- PROGRESS ---------- */
+const KEY = 'czk-progress-v1';
+const blank = () => ({lesson:1, known:{}, att:{}, wm:{}, write:{ok:0,total:0,hint:0}, match:{rounds:0,miss:0}, gram:{}, dial:{}, tests:[]});
+let P = (() => { try { const r = localStorage.getItem(KEY); if (r) return Object.assign(blank(), JSON.parse(r)); } catch(e) {} return blank(); })();
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(P)); } catch(e) {} }
+const miss = id => { P.wm[id] = (P.wm[id]||0) + 1; };
+
+/* ---------- GRAMMAR ---------- */
+function conjTable(verbs){
+  let h = '<div class="scroll"><table><tr><th></th>' + verbs.map(v=>`<th>${v}</th>`).join('') + '</tr>';
+  for(let i=0;i<6;i++) h += `<tr><th>${PR6[i]}</th>` + verbs.map(v=>`<td>${arr(V[v][i]).join(' / ')}</td>`).join('') + '</tr>';
+  return h + '</table></div>';
+}
+function conjItem(verbs, negChance){
+  const v = pick(verbs), [p,i] = pick(PRON), neg = Math.random() < negChance;
+  let forms = arr(V[v][i]);
+  if (neg) forms = forms.map(f => (v==='být' && i===2) ? 'není' : 'ne'+f);
+  return {type:'type', prompt:`${p} ___`, hint:`${v}${neg?', заперечення':''}`, answers:forms};
+}
+const nounPool = () => W.filter(w => ['Ma','Mi','F','N'].includes(w.g) && !w.ans[0].includes(' ') && w.l <= (S.lesson || 3));
+function adjForm(adj, g){ if(adj.endsWith('í')) return adj; return g==='F' ? adj.slice(0,-1)+'á' : g==='N' ? adj.slice(0,-1)+'é' : adj; }
+const U = ['nula','jedna','dva','tři','čtyři','pět','šest','sedm','osm','devět','deset','jedenáct','dvanáct','třináct','čtrnáct','patnáct','šestnáct','sedmnáct','osmnáct','devatenáct'];
+const TENS = {2:'dvacet',3:'třicet',4:'čtyřicet',5:'padesát',6:'šedesát',7:'sedmdesát',8:'osmdesát',9:'devadesát'};
+const HUND = {1:'sto',2:'dvě stě',3:'tři sta',4:'čtyři sta',5:'pět set',6:'šest set',7:'sedm set',8:'osm set',9:'devět set'};
+function numWords(n){
+  if(n===1000) return ['tisíc'];
+  const b100 = r => r<20 ? U[r] : TENS[Math.floor(r/10)] + (r%10 ? ' '+U[r%10] : '');
+  const h = Math.floor(n/100), r = n%100, parts = [];
+  if(h) parts.push(HUND[h]); if(r || !h) parts.push(b100(r));
+  const s = parts.join(' ');
+  return / jedna$/.test(s) ? [s, s.replace(/ jedna$/,' jeden')] : [s];
+}
+const AKUZ = [['česneková polévka','česnekovou polévku'],['bramborová polévka','bramborovou polévku'],['svíčková omáčka','svíčkovou omáčku'],
+ ['neperlivá voda','neperlivou vodu'],['perlivá voda','perlivou vodu'],['vanilková zmrzlina','vanilkovou zmrzlinu'],['dušená rýže','dušenou rýži'],
+ ['káva','kávu'],['polévka','polévku'],['grilovaný losos','grilovaného lososa'],['smažený kapr','smaženého kapra'],['smažený sýr','smažený sýr'],
+ ['zelený čaj','zelený čaj'],['pomerančový džus','pomerančový džus'],['zeleninový salát','zeleninový salát'],['guláš','guláš'],
+ ['černé pivo','černé pivo'],['červené víno','červené víno'],['bílé víno','bílé víno'],['vepřové maso','vepřové maso'],
+ ['hovězí maso','hovězí maso'],['pečené kuře','pečené kuře'],['dušené zelí','dušené zelí']];
+const DIRS = [['doprava','vpravo','направо','праворуч'],['doleva','vlevo','наліво','ліворуч'],['nahoru','nahoře','нагору','нагорі'],['dolů','dole','вниз','внизу'],['doprostřed','uprostřed','в центр','посередині']];
+
+const GRAM = [
+ {id:'byt', ls:[1], title:'Займенники і být', sub:'jsem, jsi, je... / nejsem',
+  rule:`<p>Займенники: <b>já</b> я, <b>ty</b> ти, <b>on / ona / to</b> він / вона / воно, <b>my</b> ми, <b>vy</b> ви (ввічливо до однієї людини або до кількох), <b>oni</b> вони.</p>
+  <p>Займенник зазвичай пропускають: закінчення дієслова вже показує особу. А от <b>být</b> (бути), на відміну від української, не пропускають: «Я студентка» = <b>Jsem studentka.</b></p>
+  <p>Заперечення: <b>ne-</b> разом із дієсловом (nejsem), але <b>je → není</b>. У jsem, jsi, jsme, jste, jsou звук j не вимовляють: [sem].</p>` + conjTable(['být']),
+  gen:()=>conjItem(['být'],.35)},
+ {id:'verbs1', ls:[1], title:'Дієслова на -á, -í, -uj', sub:'dělám, rozumím, pracuju',
+  rule:`<p>Більшість дієслів змінюється за трьома зразками:</p>
+  <p><b>-at → -ám</b>: dělat, mít (mám). <b>-it / -et / -ět → -ím</b>: rozumět, mluvit. <b>-ovat → -uju</b>: pracovat, studovat.</p>
+  <p>Форми <b>-uji / -ují</b> - офіційні та письмові, у розмові <b>-uju / -ujou</b>. Заперечення: ne- разом (nerozumím).</p>` + conjTable(['dělat','rozumět','pracovat','mít']),
+  gen:()=>conjItem(['dělat','mít','rozumět','mluvit','pracovat','studovat'],.2)},
+ {id:'vok', ls:[1], title:'Звертання (кличний відмінок)', sub:'Evo! Tome! pane!',
+  rule:`<p>Як і в українській (Олено! Іване!), при звертанні ім'я змінюється.</p>
+  <p>Жіночі на <b>-a → -o</b>: Eva → Evo, slečna → slečno. Чоловічі на приголосний <b>+ e</b>: Tom → Tome, pan → pane. <b>paní</b> не змінюється.</p>`,
+  gen:()=>{ const p = pick([['Eva','Evo'],['Marina','Marino'],['Adéla','Adélo'],['Monika','Moniko'],['Olena','Oleno'],['slečna','slečno'],['Tom','Tome'],['Filip','Filipe'],['David','Davide'],['Ivan','Ivane'],['pan','pane'],['paní','paní']]);
+    return {type:'type', prompt:`${p[0]} → ___!`, hint:'звертання', answers:[p[1]]}; }},
+ {id:'gender', ls:[2,3], title:'Рід іменника', sub:'чол. жив. / чол. нежив. / жін. / сер.',
+  rule:`<p>Кожен іменник має рід, від нього залежать форми прикметників (nový / nová / nové). Підказки за закінченням:</p>
+  <p><b>приголосний</b> → майже завжди чоловічий (живе - <span class="g-Ma">doktor</span>, неживе - <span class="g-Mi">obchod</span>), але є жіночі: <span class="g-F">kancelář, tramvaj</span>. <b>-a</b> → жіночий (<span class="g-F">škola</span>). <b>-o</b> → середній (<span class="g-N">kino</span>). <b>-e / -ě</b> → переважно жіночий (<span class="g-F">restaurace</span>), але <b>-iště</b> завжди середній (<span class="g-N">letiště</span>), а також <span class="g-N">kuře</span>. <b>-í</b> → середній (<span class="g-N">nádraží, náměstí</span>), крім <span class="g-F">paní</span>.</p>
+  <p>У картках кольори показують рід: <span class="g-Ma">чол. жив.</span>, <span class="g-Mi">чол. нежив.</span>, <span class="g-F">жін.</span>, <span class="g-N">сер.</span></p>`,
+  gen:()=>{ const w = pick(nounPool()); return {type:'gender', prompt:w.ans[0], hint:w.ua, answers:[w.g], wid:w.id}; }},
+ {id:'adj', ls:[2], title:'Ten nový hotel: узгодження', sub:'ten / ta / to, nový / nová / nové',
+  rule:`<p>Вказівне слово і прикметник на <b>-ý</b> змінюються за родом. Прикметники на <b>-í</b> (moderní, kvalitní) - ні.</p>
+  <div class="scroll"><table><tr><th></th><th>ten</th><th>-ý</th><th>-í</th><th></th></tr>
+  <tr><th class="g-Ma">чол. жив.</th><td>ten</td><td>nový</td><td>moderní</td><td class="g-Ma">doktor</td></tr>
+  <tr><th class="g-Mi">чол. нежив.</th><td>ten</td><td>nový</td><td>moderní</td><td class="g-Mi">obchod</td></tr>
+  <tr><th class="g-F">жін.</th><td>ta</td><td>nová</td><td>moderní</td><td class="g-F">škola</td></tr>
+  <tr><th class="g-N">сер.</th><td>to</td><td>nové</td><td>moderní</td><td class="g-N">kino</td></tr></table></div>`,
+  gen:()=>{ const w = pick(nounPool()), adj = pick(['nový','starý','dobrý','velký','hezký','moderní','kvalitní']), af = adjForm(adj, w.g);
+    if(Math.random()<.5){ const dem = w.g==='F'?'ta':w.g==='N'?'to':'ten'; return {type:'type', prompt:`___ ${w.ans[0]}`, hint:`ten + ${adj}`, answers:[dem+' '+af]}; }
+    return {type:'type', prompt:`To je ___ ${w.ans[0]}.`, hint:adj, answers:[af]}; }},
+ {id:'jitjet', ls:[2], title:'jít чи jet', sub:'jdu пішки, jedu автобусом',
+  rule:`<p><b>jít</b> - йти пішки, <b>jet</b> - їхати (транспортом). Обидва дієслова змінюють основу: jít → jdu, jet → jedu.</p>` + conjTable(['jít','jet']),
+  gen:()=>{ const [p,i] = pick(PRON), walk = Math.random()<.45, tail = walk ? pick(['pěšky','rovně','doleva','do školy pěšky']) : pick(['autem','autobusem','tramvají','vlakem','metrem']);
+    return {type:'type', prompt:`${p} ___ ${tail}`, hint:'jít чи jet?', answers:arr(V[walk?'jít':'jet'][i])}; }},
+ {id:'dir', ls:[2], title:'Куди? і Де?', sub:'doprava ↔ vpravo',
+  rule:`<p>Для напрямку (куди?) і місця (де?) - різні слова, як «направо» і «праворуч».</p>
+  <div class="scroll"><table><tr><th>куди?</th><th>де?</th></tr>${DIRS.map(d=>`<tr><td>${d[0]} (${d[2]})</td><td>${d[1]} (${d[3]})</td></tr>`).join('')}</table></div>
+  <p>Musíte jít <b>doprava</b>. → Banka je <b>vpravo</b>.</p>`,
+  gen:()=>{ const d = pick(DIRS), other = pick(DIRS.filter(x=>x!==d)), toDir = Math.random()<.5;
+    return toDir ? {type:'choice', prompt:'Musíte jít ___.', hint:`куди? ${d[2]}`, answers:[d[0]], options:shuffle([d[0],d[1],other[0]])}
+                 : {type:'choice', prompt:`${pick(['Banka','Kino','Hotel','Škola','Zastávka','Kavárna'])} je ___.`, hint:`де? ${d[3]}`, answers:[d[1]], options:shuffle([d[0],d[1],other[1]])}; }},
+ {id:'trans', ls:[2], title:'Їхати чим?', sub:'autem, tramvají, na kole',
+  rule:`<p>Після <b>jet</b> транспорт стоїть в орудному відмінку (як «їхати трамваєм»).</p>
+  <p>Чоловічий і середній рід: <b>+em</b> (auto → autem, vlak → vlakem, taxík → taxíkem). tramvaj → <b>tramvají</b>. Велосипед: <b>na kole</b>. Пішки: <b>jít pěšky</b>.</p>`,
+  gen:()=>{ const t = pick([['auto','autem'],['autobus','autobusem'],['vlak','vlakem'],['metro','metrem'],['taxík','taxíkem'],['tramvaj','tramvají'],['kolo','na kole']]);
+    return {type:'type', prompt:'Jedu ___.', hint:`(${t[0]})`, answers:[t[1]]}; }},
+ {id:'num', ls:[2], title:'Числа 10-1000', sub:'dvacet jedna, sto padesát',
+  rule:`<p><b>11-19</b>: -náct (jedenáct, čtrnáct, patnáct, devatenáct). <b>20-40</b>: -cet (dvacet, třicet, čtyřicet). <b>50-90</b>: -desát (padesát, šedesát...).</p>
+  <p><b>100</b> sto, <b>200</b> dvě stě, <b>300-400</b> tři / čtyři sta, <b>500-900</b> pět set... <b>1000</b> tisíc.</p>
+  <p>Складені: 21 dvacet jedna, 145 sto čtyřicet pět.</p>`,
+  gen:()=>{ const r = Math.random(), n = r<.35 ? rand(11,99) : r<.55 ? rand(2,9)*10 : r<.85 ? rand(101,999) : pick([100,200,300,400,500,1000]);
+    return {type:'type', prompt:`<span class="bignum">${n}</span>`, plain:String(n), hint:'напиши словами', answers:numWords(n)}; }},
+ {id:'akuz', ls:[3], title:'Знахідний: Dám si...', sub:'česnekovou polévku, grilovaného lososa',
+  rule:`<p>Після <b>dám si, chci, mám rád(a), hledám</b> - знахідний відмінок (кого? що?).</p>
+  <div class="scroll"><table><tr><th></th><th>називний</th><th>знахідний</th></tr>
+  <tr><th class="g-Ma">чол. жив.</th><td>grilovaný losos</td><td>grilovaného lososa</td></tr>
+  <tr><th class="g-Mi">чол. нежив.</th><td>smažený sýr</td><td>smažený sýr</td></tr>
+  <tr><th class="g-F">жін.</th><td>česneková polévka<br>dušená rýže</td><td>česnekovou polévku<br>dušenou rýži</td></tr>
+  <tr><th class="g-N">сер.</th><td>černé pivo</td><td>černé pivo</td></tr></table></div>
+  <p>Змінюються тільки чоловічий живий (-ého, +a) і жіночий (-ou, -a → -u, -e → -i). Прикметники на -í (hovězí) у жін., сер. і чол. нежив. не змінюються.</p>`,
+  gen:()=>{ const a = pick(AKUZ); return {type:'type', prompt:pick(['Dám si ___.','Chci ___.','Mám ráda ___.']), hint:`(${a[0]})`, answers:[a[1]]}; }},
+ {id:'everbs', ls:[3], title:'číst, pít, chtít, jíst', sub:'čtu, piju, chci, jím',
+  rule:`<p><b>číst</b> і <b>pít</b> - дієслова на -e, основа змінюється (číst → čtu). Варто запам'ятовувати форму «já» разом з інфінітивом.</p>
+  <p><b>chtít</b> - неправильне, вчити напам'ять. <b>jíst</b> змінюється як дієслова на -í (jím, jíš...), але «вони» - jedí.</p>` + conjTable(['číst','pít','chtít','jíst']),
+  gen:()=>conjItem(['číst','pít','chtít','jíst'],.25)},
+ {id:'rad', ls:[3], title:'Mám rád / ráda', sub:'любити щось',
+  rule:`<p><b>mít rád</b> = любити (їжу, речі, людей). Слово rád узгоджується з тим, хто любить: чоловік - <b>mám rád</b>, жінка - <b>mám ráda</b>, множина - <b>máme / máte / mají rádi</b>.</p>
+  <p>Заперечення: <b>nemám ráda</b>. Предмет - у знахідному: Mám ráda kávu.</p>`,
+  gen:()=>{ const p = pick([['já, чол.','mám rád'],['já, жін.','mám ráda'],['ty, чол.','máš rád'],['ty, жін.','máš ráda'],['on','má rád'],['ona','má ráda'],['my','máme rádi'],['vy','máte rádi'],['oni','mají rádi']]);
+    const neg = Math.random()<.25, obj = pick(['kávu','čaj','pivo','zmrzlinu','víno','polévku','sýr','ovoce']);
+    return {type:'type', prompt:`(${p[0]}) ___ ${obj}.`, hint: neg ? 'mít rád, заперечення' : 'mít rád', answers:[neg ? 'ne'+p[1] : p[1]]}; }}
+];
+
+/* ---------- DIALOGUES ---------- */
+const DIAL = [
+ {l:1,t:'reply',q:'Děkuju.',a:'Prosím.'},
+ {l:1,t:'reply',q:'Dobrý den, já jsem Petr Novák.',a:'Dobrý den. Těší mě.'},
+ {l:1,t:'reply',q:'Odkud jste?',a:'Jsem z Ukrajiny.'},
+ {l:1,t:'reply',q:'Co děláte?',a:'Jsem učitelka.'},
+ {l:1,t:'reply',q:'Jak se máš?',a:'Dobře, díky. A ty?'},
+ {l:1,t:'reply',q:'Promiň!',a:'To nic.'},
+ {l:1,t:'reply',q:'Rozumíte?',a:'Nerozumím. Ještě jednou, prosím.'},
+ {l:1,t:'reply',q:'Můžeme si tykat?',a:'Určitě.'},
+ {l:1,t:'reply',q:'Měj se hezky!',a:'Ty taky. Čau!'},
+ {l:1,t:'reply',q:'Jaký máš telefon?',a:'Mám telefon 777 123 456.'},
+ {l:1,t:'gap',lines:[['A','Dobrý den, já ___ Eva.'],['B','Dobrý den. Těší mě.']],a:'jsem',o:['jsem','jsi','je']},
+ {l:1,t:'gap',lines:[['A','Odkud ___?'],['B','Jsem z Polska.']],a:'jste',o:['jste','jsou','jsme']},
+ {l:1,t:'gap',lines:[['A','Co děláš?'],['B','___ studentka.']],a:'Jsem',o:['Jsem','Jsi','Je']},
+ {l:1,t:'gap',lines:[['A','Tom je doktor?'],['B','Ne, ___. Je učitel.']],a:'není',o:['není','nejsem','nejsou']},
+ {l:1,t:'gap',lines:[['A','Rozumíš?'],['B','Ne, ___.']],a:'nerozumím',o:['nerozumím','nerozumíš','nerozumí']},
+ {l:1,t:'gap',lines:[['A','Co děláte?'],['B','___ ve škole.']],a:'Pracuju',o:['Pracuju','Pracuje','Pracujou']},
+ {l:1,t:'gap',lines:[['A','Au!'],['B','Promiň, ___!']],a:'Marino',o:['Marino','Marina','Marinu']},
+ {l:1,t:'build',ua:'Я з України.',a:'Jsem z Ukrajiny.',x:['jsi','Ukrajina']},
+ {l:1,t:'build',ua:'Як це пишеться?',a:'Jak se to píše?',x:['co']},
+ {l:1,t:'build',ua:'Звідки ти?',a:'Odkud jsi?',x:['jste']},
+ {l:1,t:'build',ua:'Вона вчителька.',a:'Ona je učitelka.',x:['jsou','učitel']},
+ {l:1,t:'build',ua:'Я працюю в школі.',a:'Pracuju ve škole.',x:['pracuje']},
+ {l:1,t:'build',ua:'Ти говориш англійською?',a:'Mluvíš anglicky?',x:['mluvíte','česky']},
+ {l:1,t:'build',ua:'Він не лікар.',a:'On není doktor.',x:['nejsem']},
+ {l:1,t:'build',ua:'Ще раз, будь ласка.',a:'Ještě jednou, prosím.',x:['děkuju']},
+ {l:1,t:'build',ua:'Я не розумію чеською.',a:'Nerozumím česky.',x:['rozumím']},
+ {l:2,t:'reply',q:'Prosím vás, kde je tady nějaká kavárna?',a:'Musíte jít rovně a pak doleva.'},
+ {l:2,t:'reply',q:'Je to daleko?',a:'Ne, je to asi pět minut pěšky.'},
+ {l:2,t:'reply',q:'Nevíte, kde je nemocnice?',a:'Nevím, promiňte.'},
+ {l:2,t:'reply',q:'Kde je zastávka?',a:'Tam, vpravo.'},
+ {l:2,t:'reply',q:'Jak se máš v Brně?',a:'Mám se dobře. Líbí se mi tady.'},
+ {l:2,t:'reply',q:'Jak jedeš do školy?',a:'Jedu tramvají.'},
+ {l:2,t:'reply',q:'Kolik je dvacet plus třicet?',a:'Padesát.'},
+ {l:2,t:'gap',lines:[['A','To je ___ hotel. (новий)']],a:'nový',o:['nový','nová','nové']},
+ {l:2,t:'gap',lines:[['A','To je ___ restaurace. (новий)']],a:'nová',o:['nový','nová','nové']},
+ {l:2,t:'gap',lines:[['A','To je ___ kino. (новий)']],a:'nové',o:['nový','nová','nové']},
+ {l:2,t:'gap',lines:[['A','Kde je banka?'],['B','Banka je ___. (ліворуч)']],a:'vlevo',o:['vlevo','doleva','dolů']},
+ {l:2,t:'gap',lines:[['A','Kde je nádraží?'],['B','Musíte jít ___ a pak rovně. (направо)']],a:'doprava',o:['doprava','vpravo','nahoře']},
+ {l:2,t:'gap',lines:[['A','Jak jedete do centra?'],['B','Jedu ___.']],a:'tramvají',o:['tramvají','tramvaj','tramvaje']},
+ {l:2,t:'gap',lines:[['A','Jdeš pěšky?'],['B','Ne, ___ autem.']],a:'jedu',o:['jedu','jdu','jede']},
+ {l:2,t:'gap',lines:[['A','Musíte jet ___ číslo tři.']],a:'autobusem',o:['autobusem','autobus','autobusu']},
+ {l:2,t:'build',ua:'Де тут кінотеатр?',a:'Kde je tady kino?',x:['jsou']},
+ {l:2,t:'build',ua:'Треба йти прямо, а потім направо.',a:'Musíte jít rovně a pak doprava.',x:['vpravo','jet']},
+ {l:2,t:'build',ua:'Готель ліворуч.',a:'Hotel je vlevo.',x:['doleva']},
+ {l:2,t:'build',ua:'Я живу в Брно.',a:'Bydlím v Brně.',x:['Brno']},
+ {l:2,t:'build',ua:'Мені тут подобається.',a:'Líbí se mi tady.',x:['tam']},
+ {l:2,t:'build',ua:'Треба їхати автобусом.',a:'Musíte jet autobusem.',x:['jít','autobus']},
+ {l:2,t:'build',ua:'Вокзал далеко.',a:'Nádraží je daleko.',x:['blízko']},
+ {l:2,t:'build',ua:'Це нова кав\u2019ярня.',a:'To je nová kavárna.',x:['nový']},
+ {l:2,t:'build',ua:'Я шукаю супермаркет.',a:'Hledám supermarket.',x:['hledá']},
+ {l:3,t:'reply',q:'Co si dáte k pití?',a:'Dám si neperlivou vodu.'},
+ {l:3,t:'reply',q:'Co si dáte k jídlu?',a:'Dám si smažený sýr a hranolky.'},
+ {l:3,t:'reply',q:'Dáte si ještě něco?',a:'Ne, děkuju. Zaplatím.'},
+ {l:3,t:'reply',q:'Zvlášť, nebo dohromady?',a:'Dohromady, prosím.'},
+ {l:3,t:'reply',q:'Nechcete cukr a mléko?',a:'Ano, děkuju.'},
+ {l:3,t:'reply',q:'Moje sestra je nemocná.',a:'To je mi líto.'},
+ {l:3,t:'reply',q:'Dobrou chuť!',a:'Děkuju.'},
+ {l:3,t:'reply',q:'Nechceš jít na kafe?',a:'Jo, ráda!'},
+ {l:3,t:'reply',q:'Jíš maso?',a:'Ne, nejím maso.'},
+ {l:3,t:'reply',q:'Máš hlad?',a:'Ano, mám hlad.'},
+ {l:3,t:'gap',lines:[['A','Dám si ___ polévku. (часниковий)']],a:'česnekovou',o:['česnekovou','česneková','česnekové']},
+ {l:3,t:'gap',lines:[['A','Co si dáte?'],['B','Dám si ___. (лосось на грилі)']],a:'grilovaného lososa',o:['grilovaného lososa','grilovaný losos','grilovanou lososu']},
+ {l:3,t:'gap',lines:[['A','Jaká je ta polévka?'],['B','Ta polévka je ___.']],a:'dobrá',o:['dobrá','dobrý','dobré']},
+ {l:3,t:'gap',lines:[['A','Jaké je to pivo?'],['B','To pivo je ___.']],a:'dobré',o:['dobré','dobrá','dobrý']},
+ {l:3,t:'gap',lines:[['A','Nejím maso. ___ si smažený sýr.']],a:'Dám',o:['Dám','Dáš','Dá']},
+ {l:3,t:'gap',lines:[['A','Ty ___ kávu? (хотіти)']],a:'chceš',o:['chceš','chci','chce']},
+ {l:3,t:'gap',lines:[['A','Dáš si víno?'],['B','Ne, díky. ___ alkohol.']],a:'Nepiju',o:['Nepiju','Nepije','Nepijou']},
+ {l:3,t:'gap',lines:[['A','Dneska mám ___ náladu.']],a:'dobrou',o:['dobrou','dobrá','dobré']},
+ {l:3,t:'build',ua:'Я візьму чорне пиво.',a:'Dám si černé pivo.',x:['černý']},
+ {l:3,t:'build',ua:'Я візьму часниковий суп.',a:'Dám si česnekovou polévku.',x:['česneková']},
+ {l:3,t:'build',ua:'Я не їм м\u2019яса.',a:'Nejím maso.',x:['jím','masa']},
+ {l:3,t:'build',ua:'Я (жін.) люблю каву.',a:'Mám ráda kávu.',x:['rád','káva']},
+ {l:3,t:'build',ua:'Скільки коштує суп?',a:'Kolik stojí polévka?',x:['polévku']},
+ {l:3,t:'build',ua:'Ти хочеш каву?',a:'Chceš kávu?',x:['chci']},
+ {l:3,t:'build',ua:'Сьогодні в мене гарний настрій.',a:'Dneska mám dobrou náladu.',x:['dobrá']},
+ {l:3,t:'build',ua:'Бажаєте ще щось?',a:'Dáte si ještě něco?',x:['dám']},
+ {l:3,t:'build',ua:'Де тут туалет?',a:'Kde je tady toaleta?',x:['kdo']}
+];
+function dialItem(d){
+  if(d.t==='reply'){
+    const others = shuffle(DIAL.filter(x=>x.t==='reply' && x!==d && x.l===d.l)).slice(0,2).map(x=>x.a);
+    return {type:'choice', kind:'reply', lines:[['A',d.q]], answers:[d.a], options:shuffle([d.a,...others]), plain:d.q, l:d.l};
+  }
+  if(d.t==='gap') return {type:'choice', kind:'gap', lines:d.lines, answers:[d.a], options:shuffle(d.o), plain:d.lines.map(x=>x[1]).join(' / '), l:d.l};
+  const end = (d.a.match(/[.?!]$/)||[''])[0], words = d.a.replace(/[.?!]$/,'').split(' ');
+  return {type:'build', ua:d.ua, answers:[d.a], words, end, tiles:shuffle([...words, ...d.x]), plain:d.ua, l:d.l};
+}
+
+/* ---------- STATE ---------- */
+const TABS = [['cards','Картки'],['match','Пари'],['write','Письмо'],['gram','Граматика'],['dial','Діалоги'],['test','Тест'],['stats','Прогрес']];
+let S = {lesson: [0,1,2,3].includes(P.lesson) ? P.lesson : 1, tab:'cards', topic:'all', swap:false};
+let C = null, M = null, Wr = null, G = null, D = null, T = null;
+const inL = l => S.lesson===0 || l===S.lesson;
+const words = () => W.filter(w => inL(w.l) && (S.topic==='all' || w.t===S.topic));
+const lessonTopics = () => [...new Set(W.filter(w=>inL(w.l)).map(w=>w.t))];
+const fkey = () => S.lesson+'|'+S.topic;
+
+/* ---------- SHELL ---------- */
+function renderShell(){
+  const L = LESSONS[S.lesson];
+  $('#title').textContent = L ? L.cz : 'Lekce 1-3';
+  $('#subtitle').textContent = L ? L.ua : 'Усі уроки разом';
+  const locked = T && T.active;
+  $('#lessons').innerHTML = [1,2,3,0].map(n => `<button class="les" data-les="${n}" aria-pressed="${S.lesson===n}" ${locked?'disabled':''}>${n ? 'Урок '+n : 'Усі'}</button>`).join('');
+  $('#tabs').innerHTML = TABS.map(([k,t]) => `<button class="tab" data-tab="${k}" aria-pressed="${S.tab===k}" ${locked && k!=='test'?'disabled':''}>${t}</button>`).join('');
+  const wordMode = ['cards','match','write'].includes(S.tab);
+  $('#chips').hidden = !wordMode;
+  $('#chips').innerHTML = wordMode ? [['all','Усе'], ...lessonTopics().map(t=>[t,TOPICS[t]])].map(([k,t]) => `<button class="chip" data-topic="${k}" aria-pressed="${S.topic===k}">${t}</button>`).join('') : '';
+  $('#legend').innerHTML = wordMode ? '<p class="legend"><span class="g-Ma">чол. жив.</span><span class="g-Mi">чол. нежив.</span><span class="g-F">жін.</span><span class="g-N">сер.</span></p>' : '';
+}
+function render(){
+  renderShell();
+  ({cards:rCards, match:rMatch, write:rWrite, gram:rGram, dial:rDial, test:rTest, stats:rStats})[S.tab]();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-les],[data-tab],[data-topic]'); if(!b || b.disabled) return;
+  if(b.dataset.les !== undefined){ S.lesson = +b.dataset.les; P.lesson = S.lesson; save(); S.topic='all'; resetModes(); }
+  if(b.dataset.tab){ S.tab = b.dataset.tab; if(S.tab==='gram') G=null; }
+  if(b.dataset.topic){ S.topic = b.dataset.topic; resetModes(); }
+  render();
+});
+function resetModes(){ C=null; M=null; Wr=null; G=null; D=null; }
+
+/* ---------- CARDS ---------- */
+function startCards(){ const list = words().filter(w=>!P.known[w.id]); C = {key:fkey(), deck:shuffle(list), i:0, again:[], flipped:false, between:false}; }
+function rCards(){
+  if(!C || C.key!==fkey()) startCards();
+  const all = words(), knownN = all.filter(w=>P.known[w.id]).length, att = (P.att[fkey()]||0)+1;
+  let h = `<p class="help">Натисни на картку, щоб перевернути. Вивчені слова відкладаються, решта повернеться в наступній спробі.</p>
+  <div class="progress"><span>Спроба ${att}</span><span>Вивчено ${knownN} / ${all.length}</span></div>
+  <div class="bar"><span style="width:${pct(knownN,all.length)}%"></span></div>`;
+  if(C.between){
+    h += `<div class="q"><div class="emoji">💪</div><p class="prompt">Спробу завершено</p><p class="hint">Ще ${C.again.length} ${C.again.length===1?'картка повернеться':'карток повернуться'}.</p><button class="btn primary wide" data-act="next-attempt">Наступна спроба</button></div>`;
+  } else if(C.i >= C.deck.length){
+    h += `<div class="q"><div class="emoji">🎉</div><p class="prompt">Усе вивчено!</p><p class="hint">У цьому наборі не лишилось невідомих карток.</p><button class="btn wide" data-act="reset-cards">Почати набір знову</button></div>`;
+  } else {
+    const w = C.deck[C.i], cz = `<div class="word ${gw(w)}">${esc(w.cz)}</div>${w.g?`<span class="badge ${gw(w)}">${GL[w.g]}</span>`:''}`;
+    const ua = `${w.e?`<div class="emoji">${w.e}</div>`:''}<div class="word">${esc(w.ua)}</div>`;
+    const [f,b] = S.swap ? [cz,ua] : [ua,cz];
+    h += `<div class="scene" data-act="flip" role="button" tabindex="0" aria-label="Перевернути картку"><div class="card ${C.flipped?'flipped':''}">
+      <div class="face">${f}<span class="tap">${C.i+1} / ${C.deck.length}</span></div><div class="face back">${b}</div></div></div>
+      <div class="actions"><button class="btn again" data-act="again">Ще раз</button><button class="btn good" data-act="know">Знаю</button></div>`;
+  }
+  h += `<div class="links"><button class="link" data-act="shuffle">Перемішати</button><button class="link" data-act="swap">${S.swap?'Спершу українською':'Спершу чеською'}</button><button class="link" data-act="reset-cards">Скинути картки</button></div>`;
+  $('#view').innerHTML = h;
+}
+function cardAct(a){
+  if(a==='flip'){ C.flipped=!C.flipped; $('.card')?.classList.toggle('flipped', C.flipped); return true; }
+  if(a==='know' || a==='again'){
+    const w = C.deck[C.i]; if(a==='know') P.known[w.id]=1; else C.again.push(w);
+    C.i++; C.flipped=false;
+    if(C.i>=C.deck.length && C.again.length) C.between = true;
+    save(); return false;
+  }
+  if(a==='next-attempt'){ P.att[fkey()]=(P.att[fkey()]||0)+1; save(); C.deck=shuffle(C.again); C.again=[]; C.i=0; C.between=false; return false; }
+  if(a==='shuffle'){ C.deck = C.deck.slice(0,C.i).concat(shuffle(C.deck.slice(C.i))); C.flipped=false; return false; }
+  if(a==='swap'){ S.swap=!S.swap; C.flipped=false; return false; }
+  if(a==='reset-cards'){ words().forEach(w=>delete P.known[w.id]); delete P.att[fkey()]; save(); startCards(); return false; }
+}
+
+/* ---------- MATCH ---------- */
+function startMatch(){ M = {key:fkey(), score:0, miss:0, round:0}; newRound(); }
+function newRound(){
+  const set = shuffle(words()).slice(0,5);
+  M.round++; M.set=set; M.left=shuffle(set); M.right=shuffle(set); M.sel=null; M.done=new Set();
+}
+function rMatch(){
+  if(!M || M.key!==fkey()) startMatch();
+  if(!M.set.length){ $('#view').innerHTML='<p class="help">У цьому наборі немає слів.</p>'; return; }
+  let h = `<p class="help">Вибери чеське слово, а потім його переклад.</p><div class="progress"><span>Раунд ${M.round}</span><span>Пар: ${M.score}, помилок: ${M.miss}</span></div>`;
+  h += '<div class="match"><div class="col">' + M.left.map(w=>`<button class="tile ${gw(w)} ${M.done.has(w.id)?'ok':''} ${M.sel===w.id?'sel':''}" data-act="ml" data-id="${esc(w.id)}" ${M.done.has(w.id)?'disabled':''}>${esc(w.cz)}</button>`).join('') + '</div><div class="col">'
+     + M.right.map(w=>`<button class="tile ${M.done.has(w.id)?'ok':''}" data-act="mr" data-id="${esc(w.id)}" ${M.done.has(w.id)?'disabled':''}>${w.e?w.e+' ':''}${esc(w.ua)}</button>`).join('') + '</div></div>';
+  if(M.done.size===M.set.length) h += `<button class="btn primary wide" data-act="mnext">Наступний раунд</button>`;
+  $('#view').innerHTML = h;
+  if(M.shake){ [...document.querySelectorAll('[data-act="mr"]')].find(x=>x.dataset.id===M.shake)?.classList.add('shake'); M.shake=null; }
+}
+function matchAct(a, b){
+  if(a==='ml'){ M.sel = b.dataset.id; return false; }
+  if(a==='mr'){
+    if(!M.sel) return true;
+    if(b.dataset.id===M.sel){ M.done.add(M.sel); M.score++; M.sel=null; if(M.done.size===M.set.length){ P.match.rounds++; save(); } return false; }
+    M.miss++; P.match.miss++; miss(M.sel); save(); M.shake=b.dataset.id; return false;
+  }
+  if(a==='mnext'){ newRound(); return false; }
+}
+
+/* ---------- WRITE ---------- */
+function startWrite(){ const q = shuffle(words()).slice(0,15); q.forEach(w=>w._back=false); Wr = {key:fkey(), queue:q, size:q.length, cleared:0, hints:0, tries:0, state:null, fb:''}; }
+function skeleton(ans, n){
+  let k = 0;
+  return [...ans].map(ch => /\p{L}/u.test(ch) ? (k++ < n ? ch : '_') : (ch===' ' ? '\u2003' : ch)).join(' ');
+}
+function rWrite(){
+  if(!Wr || Wr.key!==fkey()) startWrite();
+  if(!Wr.size){ $('#view').innerHTML='<p class="help">У цьому наборі немає слів.</p>'; return; }
+  let h = `<p class="help">Напиши чеською. Чеські літери - на панелі під полем.</p>
+  <div class="progress"><span>Залишилось ${Wr.queue.length}</span><span>Точність ${pct(P.write.ok,P.write.total)}%</span></div>
+  <div class="bar"><span style="width:${pct(Wr.cleared,Wr.size)}%"></span></div>`;
+  if(!Wr.queue.length){
+    h += `<div class="q"><div class="emoji">✨</div><p class="prompt">Готово!</p><p class="hint">Підказок використано: ${Wr.hints}</p><button class="btn primary wide" data-act="wrestart">Ще 15 слів</button></div>`;
+    $('#view').innerHTML = h; return;
+  }
+  const w = Wr.queue[0], shown = Wr.state==='reveal';
+  h += `<div class="q">${w.e?`<div class="emoji">${w.e}</div>`:''}<p class="prompt">${esc(w.ua)}</p>
+    <p class="pattern" aria-label="Кількість літер">${esc(skeleton(w.ans[0], shown ? 999 : (Wr.hintNow||0)))}</p>
+    <input class="ans ${Wr.state==='ok'?'good':Wr.state&&Wr.state!=='almost'?'bad':''}" id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Відповідь" ${shown||Wr.state==='ok'?`disabled value="${esc(Wr.v||'')}"`:''}>
+    ${diaBar()}
+    <div class="fb ${Wr.state==='ok'?'good':Wr.state==='almost'?'almost':'bad'}" aria-live="polite">${Wr.fb}</div>
+    <div class="actions">${shown||Wr.state==='ok' ? `<button class="btn primary" data-act="wnext" style="grid-column:1/-1">Далі</button>`
+      : `<button class="btn" data-act="whint">Підказка</button><button class="btn primary" data-act="wcheck">Перевірити</button>`}</div></div>`;
+  $('#view').innerHTML = h;
+  const inp = $('#answer'); if(inp && !inp.disabled) inp.focus(); else $('[data-act="wnext"]')?.focus();
+}
+function writeAct(a){
+  const w = Wr.queue[0];
+  if(a==='whint'){ Wr.hints++; w._h = (w._h||0)+1; Wr.hintNow=(Wr.hintNow||0)+1; P.write.hint++; save(); const v=$('#answer').value; rWriteKeep(v); return true; }
+  if(a==='wcheck'){
+    const v = $('#answer').value, r = judge(v, w.ans); if(r==='empty') return true;
+    if(r==='ok'){
+      P.write.total++; const clean = !Wr.hintNow && !Wr.tries;
+      if(clean){ P.write.ok++; } Wr.v=v; Wr.state='ok'; Wr.fb = clean ? 'Правильно!' : `Правильно! Слово повернеться ще раз.`; w._back = !clean; save(); return false;
+    }
+    Wr.tries++;
+    if(Wr.tries===1){ Wr.state = r==='almost'?'almost':'bad'; Wr.fb = r==='almost' ? 'Майже! Перевір діакритику (háček, čárka).' : 'Ні, спробуй ще раз.'; rWriteKeep(v); return true; }
+    P.write.total++; miss(w.id); save(); Wr.v=v; Wr.state='reveal'; Wr.fb = `Правильно: ${esc(w.ans.join(' / '))}`; w._back = true; return false;
+  }
+  if(a==='wnext'){
+    Wr.queue.shift(); if(w._back){ Wr.queue.push(w); } else Wr.cleared++;
+    w._back=false; Wr.tries=0; Wr.hintNow=0; Wr.state=null; Wr.fb=''; return false;
+  }
+  if(a==='wrestart'){ startWrite(); return false; }
+}
+function rWriteKeep(v){ rWrite(); const i=$('#answer'); if(i){ i.value=v; i.focus(); } }
+
+/* ---------- GRAMMAR ---------- */
+const lessonGram = () => GRAM.filter(g => S.lesson===0 ? true : g.ls.includes(S.lesson));
+function rGram(){
+  if(!G){
+    const list = lessonGram();
+    $('#view').innerHTML = `<p class="help">Вибери тему: спершу коротке правило, потім 10 завдань.</p><div class="topics">` +
+      list.map(g => { const s = P.gram[g.id]; return `<button class="topic" data-act="gopen" data-id="${g.id}"><b>${esc(g.title)}</b><small>${esc(g.sub)}${s?` - точність ${pct(s.ok,s.total)}%`:''}</small></button>`; }).join('') + '</div>';
+    return;
+  }
+  const g = GRAM.find(x=>x.id===G.id);
+  let h = `<button class="link" data-act="gback">← Усі теми</button><h2 style="margin:4px 0 10px">${esc(g.title)}</h2>
+  <details class="rule" ${G.i===0 && !G.answered ? 'open':''}><summary>Правило</summary>${g.rule}</details>`;
+  if(G.i >= G.items.length){
+    h += `<div class="q"><p class="big">${G.ok} / ${G.items.length}</p><p class="hint">${G.ok===G.items.length?'Бездоганно!':G.ok>=7?'Добре, ще трохи практики.':'Варто перечитати правило і спробувати ще.'}</p>
+      <div class="actions"><button class="btn" data-act="gback">До тем</button><button class="btn primary" data-act="grestart">Ще 10</button></div></div>`;
+  } else {
+    h += `<div class="progress"><span>Завдання ${G.i+1} / ${G.items.length}</span><span>Правильно: ${G.ok}</span></div>` + itemHTML(G.items[G.i], G, 'g');
+  }
+  $('#view').innerHTML = h;
+  focusMain();
+}
+function startGram(id){ const g = GRAM.find(x=>x.id===id); G = {id, items:Array.from({length:10}, g.gen), i:0, ok:0, answered:null}; }
+
+/* shared item renderer for grammar / dialogues / test */
+function itemHTML(it, st, pre, strict){
+  const done = st.answered, correct = done && done.ok;
+  let body = '';
+  if(it.lines) body += '<div class="chat">' + it.lines.map(([who,t]) => `<div class="bub ${who==='A'?'a':'b'}">${esc(t).replace('___','<span class="gap">'+(done&&!strict? esc(it.answers[0]) : '&nbsp;')+'</span>')}</div>`).join('') + '</div>';
+  if(it.type==='type'){
+    body += `<p class="prompt">${it.prompt.includes('<') ? it.prompt : esc(it.prompt)}</p>${it.hint?`<p class="hint">${esc(it.hint)}</p>`:''}
+      <input class="ans ${done?(correct?'good':'bad'):''}" id="answer" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Відповідь" ${done?'disabled':''} value="${done?esc(done.v):''}">${done?'':diaBar()}`;
+  } else if(it.type==='gender'){
+    body += `<p class="prompt">${esc(it.prompt)}</p><p class="hint">${esc(it.hint)}</p><div class="gbtns">` +
+      ['Ma','Mi','F','N'].map(k => `<button class="gbtn g-${k} ${done&&!strict? (k===it.answers[0]?'right':(done.v===k?'wrong':'')) : ''}" data-act="${pre}pick" data-v="${k}" ${done?'disabled':''}>${GL[k]}</button>`).join('') + '</div>';
+  } else if(it.type==='choice'){
+    if(it.prompt) body += `<p class="prompt">${esc(it.prompt)}</p>${it.hint?`<p class="hint">${esc(it.hint)}</p>`:''}`;
+    if(it.kind==='reply') body += '<p class="hint">Вибери найкращу відповідь</p>';
+    body += '<div class="opts">' + it.options.map(o => `<button class="opt ${done&&!strict?(o===it.answers[0]?'right':(done.v===o?'wrong':'')):''}" data-act="${pre}pick" data-v="${esc(o)}" ${done?'disabled':''}>${esc(o)}</button>`).join('') + '</div>';
+  } else if(it.type==='build'){
+    const used = st.built || [];
+    body += `<p class="prompt">${esc(it.ua)}</p><p class="hint">Склади речення чеською</p>
+      <div class="built" aria-label="Твоє речення">${used.map((ti,k)=>`<button class="wt" data-act="${pre}unb" data-k="${k}" ${done?'disabled':''}>${esc(it.tiles[ti])}</button>`).join('')}${used.length?esc(it.end):''}</div>
+      <div class="pool">${it.tiles.map((t,ti)=>`<button class="wt" data-act="${pre}b" data-k="${ti}" ${used.includes(ti)||done?'disabled':''}>${esc(t)}</button>`).join('')}</div>`;
+  }
+  let fb = '';
+  if(done && !strict) fb = correct ? '<div class="fb good">Правильно!</div>' : `<div class="fb ${done.r==='almost'?'almost':'bad'}">${done.r==='almost'?'Майже! Діакритика: ':'Правильно: '}${esc(it.answers[0])}</div>`;
+  let btn = '';
+  if(done) btn = `<button class="btn primary wide" data-act="${pre}next">Далі</button>`;
+  else if(it.type==='type' || it.type==='build') btn = `<button class="btn primary wide" data-act="${pre}check">${strict?'Відповісти':'Перевірити'}</button>`;
+  return `<div class="q">${body}${fb}${btn}</div>`;
+}
+/* evaluate current item; returns {ok, v, r} or null if empty */
+function evalItem(it, st, via){
+  if(it.type==='type'){ const v=$('#answer').value, r=judge(v,it.answers); if(r==='empty') return null; return {ok:r==='ok', v, r}; }
+  if(it.type==='build'){ const used=st.built||[]; if(!used.length) return null; const v=used.map(k=>it.tiles[k]).join(' ')+it.end; const r=judge(v,it.answers); return {ok:r==='ok', v, r}; }
+  const v = via; return {ok: v===it.answers[0], v, r: v===it.answers[0]?'ok':'bad'};
+}
+function itemAct(a, b, st, pre, onDone){
+  const it = st.items[st.i];
+  if(a===pre+'b'){ st.built=[...(st.built||[]), +b.dataset.k]; return 'rerender'; }
+  if(a===pre+'unb'){ st.built=(st.built||[]).filter((_,k)=>k!==+b.dataset.k); return 'rerender'; }
+  if(a===pre+'check' || a===pre+'pick'){
+    const res = evalItem(it, st, b.dataset.v); if(!res) return 'noop';
+    st.answered = res; if(res.ok) st.ok++; onDone(it, res); return 'rerender';
+  }
+  if(a===pre+'next'){ st.i++; st.answered=null; st.built=[]; return 'rerender'; }
+  return null;
+}
+
+/* ---------- DIALOGUES ---------- */
+function startDial(){ const pool = DIAL.filter(d=>inL(d.l)); D = {key:S.lesson, items:shuffle(pool).slice(0,10).map(dialItem), i:0, ok:0, answered:null, built:[]}; }
+function rDial(){
+  if(!D || D.key!==S.lesson) startDial();
+  let h = `<p class="help">Живі ситуації: відповісти на репліку, заповнити пропуск, скласти речення.</p>`;
+  if(D.i >= D.items.length){
+    h += `<div class="q"><p class="big">${D.ok} / ${D.items.length}</p><p class="hint">Раунд діалогів завершено.</p><button class="btn primary wide" data-act="drestart">Новий раунд</button></div>`;
+  } else h += `<div class="progress"><span>${D.i+1} / ${D.items.length}</span><span>Правильно: ${D.ok}</span></div>` + itemHTML(D.items[D.i], D, 'd');
+  $('#view').innerHTML = h;
+  focusMain();
+}
+function focusMain(){ const i=$('#answer:not([disabled])'); if(i) i.focus(); else $('[data-act$="next"]')?.focus(); }
+
+/* ---------- TEST ---------- */
+function buildTest(){
+  const ws = shuffle(W.filter(w=>inL(w.l))).slice(0,10).map(w => ({type:'type', prompt:w.ua, hint:'', answers:w.ans, plain:w.ua, wid:w.id}));
+  const gs = lessonGram(); const gi = Array.from({length:6}, () => { const it = pick(gs).gen(); it.plain = it.plain || (it.type==='gender' ? it.prompt+' (рід)' : it.prompt.replace(/<[^>]+>/g,'')+' '+(it.hint||'')); return it; });
+  const ds = shuffle(DIAL.filter(d=>inL(d.l))).slice(0,4).map(dialItem);
+  return shuffle([...ws, ...gi, ...ds]);
+}
+function rTest(){
+  if(!T || !T.active){
+    let h = `<div class="q"><div class="emoji">📝</div><p class="prompt">Тест: ${S.lesson ? 'урок '+S.lesson : 'уроки 1-3'}</p>
+      <p class="hint">20 завдань: слова, граматика, діалоги. Без підказок, вставка тексту вимкнена. Відповіді покажу в кінці.</p>
+      <button class="btn primary wide" data-act="tstart">Почати тест</button></div>`;
+    if(T && T.result) h = resultHTML() + h;
+    $('#view').innerHTML = h; return;
+  }
+  const it = T.items[T.i];
+  $('#view').innerHTML = `<div class="progress"><span>Питання ${T.i+1} / ${T.items.length}</span><span>${T.leaves?`Виходів з вкладки: ${T.leaves}`:''}</span></div>
+   <div class="bar"><span style="width:${pct(T.i,T.items.length)}%"></span></div>` + itemHTML(it, T, 't', true);
+  const inp = $('#answer'); if(inp){ inp.focus(); inp.addEventListener('paste', e=>e.preventDefault()); inp.addEventListener('drop', e=>e.preventDefault()); }
+}
+function testAct(a, b){
+  if(a==='tstart'){ T = {active:true, items:buildTest(), i:0, ok:0, answered:null, built:[], log:[], leaves:0}; renderShell(); return 'rerender'; }
+  const it = T.items[T.i];
+  if(a==='tb'){ T.built=[...(T.built||[]), +b.dataset.k]; return 'rerender'; }
+  if(a==='tunb'){ T.built=T.built.filter((_,k)=>k!==+b.dataset.k); return 'rerender'; }
+  if(a==='tcheck' || a==='tpick'){
+    const res = evalItem(it, T, b.dataset.v); if(!res) return;
+    if(res.ok) T.ok++; else if(it.wid) miss(it.wid);
+    T.log.push({q:it.plain || it.prompt, v:res.v, a:it.answers[0], ok:res.ok, g:it.type==='gender'});
+    T.i++; T.built=[];
+    if(T.i >= T.items.length){
+      T.active=false; T.result={ok:T.ok, total:T.items.length, leaves:T.leaves, log:T.log};
+      P.tests.unshift({d:today(), l:S.lesson, ok:T.ok, total:T.items.length, leaves:T.leaves}); P.tests = P.tests.slice(0,30); save(); renderShell();
+    }
+    return 'rerender';
+  }
+}
+function resultHTML(){
+  const r = T.result, wrong = r.log.filter(x=>!x.ok), show = v => GL[v] || v;
+  return `<div class="q" style="margin-bottom:16px"><p class="big">${r.ok} / ${r.total}</p><p class="hint">${pct(r.ok,r.total)}%${r.leaves?`, виходів з вкладки: ${r.leaves}`:''}</p>
+   ${wrong.length ? '<ul class="res">' + wrong.map(x=>`<li>${esc(x.q)}<br><span class="you">${esc(x.g?show(x.v):x.v||'-')}</span> → <span class="right">${esc(x.g?show(x.a):x.a)}</span></li>`).join('') + '</ul>' : '<p class="fb good">Жодної помилки!</p>'}</div>`;
+}
+document.addEventListener('visibilitychange', () => { if(document.hidden && T && T.active){ T.leaves++; } });
+
+/* ---------- STATS ---------- */
+function rStats(){
+  let h = '';
+  for(const l of [1,2,3]){
+    const ws = W.filter(w=>w.l===l), k = ws.filter(w=>P.known[w.id]).length;
+    const gs = GRAM.filter(g=>g.ls[0]===l).map(g=>{ const s=P.gram[g.id]; return `<div class="row"><span>${esc(g.title)}</span><span class="muted">${s?pct(s.ok,s.total)+'% ('+s.total+')':'-'}</span></div>`; }).join('');
+    const d = P.dial[l];
+    h += `<div class="stat"><h2>Урок ${l}. ${esc(LESSONS[l].cz)}</h2>
+      <div class="row"><span>Картки вивчено</span><span>${k} / ${ws.length}</span></div><div class="mini"><span style="width:${pct(k,ws.length)}%"></span></div>
+      ${gs}<div class="row"><span>Діалоги</span><span class="muted">${d?pct(d.ok,d.total)+'% ('+d.total+')':'-'}</span></div></div>`;
+  }
+  const hard = Object.entries(P.wm).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([id,n])=>{ const w=W.find(x=>x.id===id); return w?`<div class="row"><span class="${gw(w)}">${esc(w.cz)}</span><span class="muted">${esc(w.ua)} - ${n}×</span></div>`:''; }).join('');
+  h += `<div class="stat"><h2>Письмо і пари</h2><div class="row"><span>Точність письма</span><span>${pct(P.write.ok,P.write.total)}% (${P.write.total})</span></div>
+    <div class="row"><span>Підказок</span><span>${P.write.hint}</span></div><div class="row"><span>Раундів пар</span><span>${P.match.rounds}, помилок ${P.match.miss}</span></div></div>
+    <div class="stat"><h2>Найважчі слова</h2>${hard || '<p class="muted">Поки що помилок немає.</p>'}</div>
+    <div class="stat"><h2>Історія тестів</h2>${P.tests.length ? P.tests.map(t=>`<div class="row"><span>${esc(t.d)} <span class="muted">${t.l?'урок '+t.l:'усі'}</span></span><span>${t.ok}/${t.total}${t.leaves?' <span class="muted">('+t.leaves+'↗)</span>':''}</span></div>`).join('') : '<p class="muted">Тестів ще не було.</p>'}</div>
+    <button class="btn again wide" data-act="resetall">${S.confirm?'Точно? Натисни ще раз':'Скинути весь прогрес'}</button>`;
+  $('#view').innerHTML = h;
+}
+
+/* ---------- EVENTS ---------- */
+$('#view').addEventListener('pointerdown', e => { if(e.target.closest('[data-act="dia"]')) e.preventDefault(); });
+$('#view').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if(!b || b.disabled) return;
+  const a = b.dataset.act;
+  if(a==='dia'){ const i=$('#answer'); if(!i||i.disabled) return; const s=i.selectionStart??i.value.length, en=i.selectionEnd??s; i.value=i.value.slice(0,s)+b.dataset.ch+i.value.slice(en); i.setSelectionRange(s+1,s+1); i.focus(); return; }
+  if(a!=='resetall') S.confirm=false;
+  let keep = false;
+  if(S.tab==='cards') keep = cardAct(a);
+  else if(S.tab==='match') keep = matchAct(a,b);
+  else if(S.tab==='write') keep = writeAct(a);
+  else if(S.tab==='gram'){
+    if(a==='gopen'){ startGram(b.dataset.id); }
+    else if(a==='gback'){ G=null; }
+    else if(a==='grestart'){ startGram(G.id); }
+    else { const r = itemAct(a,b,G,'g',(it,res)=>{ const s=P.gram[G.id]||(P.gram[G.id]={ok:0,total:0}); s.total++; if(res.ok) s.ok++; if(!res.ok && it.wid) miss(it.wid); save(); }); if(r==='noop') return; }
+  }
+  else if(S.tab==='dial'){
+    if(a==='drestart') startDial();
+    else { const r = itemAct(a,b,D,'d',(it,res)=>{ const s=P.dial[it.l]||(P.dial[it.l]={ok:0,total:0}); s.total++; if(res.ok) s.ok++; save(); }); if(r==='noop') return; }
+  }
+  else if(S.tab==='test'){ testAct(a,b); }
+  else if(S.tab==='stats' && a==='resetall'){
+    if(!S.confirm){ S.confirm=true; } else { S.confirm=false; const l=P.lesson; P=blank(); P.lesson=l; save(); resetModes(); }
+  }
+  if(!keep) render();
+});
+$('#view').addEventListener('keydown', e => {
+  if(e.key==='Enter' && e.target.id==='answer'){ e.preventDefault(); const b=$('[data-act$="check"]'); b && b.click(); }
+  if((e.key===' '||e.key==='Enter') && e.target.closest('.scene')){ e.preventDefault(); cardAct('flip'); }
+});
+render();
+</script>
+</body>
+</html>
